@@ -1,0 +1,12 @@
+{
+  "adapter": "google",
+  "model": "google/gemini-2.5-pro",
+  "project_env": "GOOGLE_CLOUD_PROJECT",
+  "location": "us-central1",
+  "max_tokens": 4096,
+  "temperature": 0.1,
+  "max_turns": 16,
+  "runs": 16,
+  "seed_list": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+  "note": "Third cohort attempt, on google/gemini-2.5-pro (Vertex AI, location=us-central1). The first two cohorts -- google/gemini-2.5-flash (25.0% success, 16/16 complete, see reports/results.gemini-2.5-flash.jsonl) and google/gemini-3.5-flash (2/9 success before the run was cut short for the same missed_clue pattern plus 2/9 rate-limited, see reports/results.gemini-3.5-flash-partial.jsonl) -- both converged on the same failure mode: most non-successful rollouts never composed the digest-mismatch exploit (bug 1) at all. This cohort exists to separate 'model too weak' from 'task under-signaled': gemini-2.5-pro is the strongest reasoning model available on this project (confirmed reachable, no rate-limit issues seen in smoke testing). max_tokens raised to 4096 for the same reasoning-token-overhead reason as the 3.5-flash cohort (measured up to 191 reasoning tokens for a single trivial call in isolated testing)."
+}

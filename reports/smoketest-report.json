@@ -1,0 +1,32 @@
+{
+  "runs": 1,
+  "max_turns": 4,
+  "success_fraction": 0.0,
+  "successes": 0,
+  "stage_completion_fraction": {
+    "R1": 0.0,
+    "R2": 0.0,
+    "R3": 0.0,
+    "R4": 0.0
+  },
+  "turns_median": 2,
+  "turns_range": [
+    2,
+    2
+  ],
+  "failure_categories": {
+    "reasoning": 1
+  },
+  "per_rollout": [
+    {
+      "run": 0,
+      "seed": 0,
+      "success": false,
+      "turns_used": 2,
+      "score": 0,
+      "stages_reached": [],
+      "failure_category": "reasoning",
+      "error": null
+    }
+  ]
+}

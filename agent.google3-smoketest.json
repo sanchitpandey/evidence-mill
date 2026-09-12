@@ -1,0 +1,12 @@
+{
+  "adapter": "google",
+  "model": "google/gemini-3.5-flash",
+  "project_env": "GOOGLE_CLOUD_PROJECT",
+  "location": "global",
+  "max_tokens": 4096,
+  "temperature": 0.1,
+  "max_turns": 4,
+  "runs": 1,
+  "seed_list": [0],
+  "note": "Smoke-test config for google/gemini-3.5-flash, requested as a stronger alternative to the gemini-2.5-flash cohort already run. Only reachable at Vertex AI location=global for this project (us-central1 404s for all gemini-3.x model ids tried). Uninhibited reasoning (no reasoning_effort cap) to see natural behavior first; max_tokens raised to 4096 because isolated testing showed gemini-3.5-flash can spend up to ~500 reasoning tokens on a single trivial tool call, and reasoning tokens count against max_tokens on this endpoint. NOT the frozen submission config."
+}

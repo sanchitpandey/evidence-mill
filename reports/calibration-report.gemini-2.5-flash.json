@@ -1,0 +1,222 @@
+{
+  "runs": 16,
+  "max_turns": 16,
+  "success_fraction": 0.25,
+  "successes": 4,
+  "stage_completion_fraction": {
+    "R1": 0.625,
+    "R2": 0.625,
+    "R3": 0.25,
+    "R4": 0.25
+  },
+  "turns_median": 12.0,
+  "turns_range": [
+    4,
+    16
+  ],
+  "failure_categories": {
+    "reasoning": 5,
+    "missed_clue": 4,
+    "state_prerequisite": 3
+  },
+  "per_rollout": [
+    {
+      "run": 0,
+      "seed": 0,
+      "success": true,
+      "turns_used": 8,
+      "score": 100,
+      "stages_reached": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "failure_category": null,
+      "error": null
+    },
+    {
+      "run": 1,
+      "seed": 1,
+      "success": true,
+      "turns_used": 8,
+      "score": 100,
+      "stages_reached": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "failure_category": null,
+      "error": null
+    },
+    {
+      "run": 2,
+      "seed": 2,
+      "success": false,
+      "turns_used": 11,
+      "score": 40,
+      "stages_reached": [
+        "R1",
+        "R2"
+      ],
+      "failure_category": "reasoning",
+      "error": null
+    },
+    {
+      "run": 3,
+      "seed": 3,
+      "success": false,
+      "turns_used": 16,
+      "score": 0,
+      "stages_reached": [],
+      "failure_category": "missed_clue",
+      "error": null
+    },
+    {
+      "run": 4,
+      "seed": 4,
+      "success": false,
+      "turns_used": 16,
+      "score": 40,
+      "stages_reached": [
+        "R1",
+        "R2"
+      ],
+      "failure_category": "state_prerequisite",
+      "error": null
+    },
+    {
+      "run": 5,
+      "seed": 5,
+      "success": false,
+      "turns_used": 16,
+      "score": 40,
+      "stages_reached": [
+        "R1",
+        "R2"
+      ],
+      "failure_category": "state_prerequisite",
+      "error": null
+    },
+    {
+      "run": 6,
+      "seed": 6,
+      "success": false,
+      "turns_used": 13,
+      "score": 0,
+      "stages_reached": [],
+      "failure_category": "reasoning",
+      "error": null
+    },
+    {
+      "run": 7,
+      "seed": 7,
+      "success": false,
+      "turns_used": 11,
+      "score": 40,
+      "stages_reached": [
+        "R1",
+        "R2"
+      ],
+      "failure_category": "reasoning",
+      "error": null
+    },
+    {
+      "run": 8,
+      "seed": 8,
+      "success": false,
+      "turns_used": 16,
+      "score": 0,
+      "stages_reached": [],
+      "failure_category": "missed_clue",
+      "error": null
+    },
+    {
+      "run": 9,
+      "seed": 9,
+      "success": false,
+      "turns_used": 4,
+      "score": 0,
+      "stages_reached": [],
+      "failure_category": "reasoning",
+      "error": null
+    },
+    {
+      "run": 10,
+      "seed": 10,
+      "success": true,
+      "turns_used": 11,
+      "score": 100,
+      "stages_reached": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "failure_category": null,
+      "error": null
+    },
+    {
+      "run": 11,
+      "seed": 11,
+      "success": false,
+      "turns_used": 16,
+      "score": 40,
+      "stages_reached": [
+        "R1",
+        "R2"
+      ],
+      "failure_category": "state_prerequisite",
+      "error": null
+    },
+    {
+      "run": 12,
+      "seed": 12,
+      "success": true,
+      "turns_used": 11,
+      "score": 100,
+      "stages_reached": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "failure_category": null,
+      "error": null
+    },
+    {
+      "run": 13,
+      "seed": 13,
+      "success": false,
+      "turns_used": 11,
+      "score": 40,
+      "stages_reached": [
+        "R1",
+        "R2"
+      ],
+      "failure_category": "reasoning",
+      "error": null
+    },
+    {
+      "run": 14,
+      "seed": 14,
+      "success": false,
+      "turns_used": 16,
+      "score": 0,
+      "stages_reached": [],
+      "failure_category": "missed_clue",
+      "error": null
+    },
+    {
+      "run": 15,
+      "seed": 15,
+      "success": false,
+      "turns_used": 16,
+      "score": 0,
+      "stages_reached": [],
+      "failure_category": "missed_clue",
+      "error": null
+    }
+  ]
+}

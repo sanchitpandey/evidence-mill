@@ -1,0 +1,7 @@
+httpx
+pytest
+pyyaml
+anthropic
+openai==1.86.0
+google-auth
+requests

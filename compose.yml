@@ -1,0 +1,81 @@
+services:
+  target:
+    build:
+      context: .
+      target: target
+    networks:
+      - evidence-mill
+    # Best-effort host convenience: works on a standard Linux Docker Engine.
+    # On some Docker Desktop for Windows (WSL2) backends, publishing a port on
+    # a network marked internal:true silently produces no host binding -- do
+    # not rely on this for the trusted admin/reference/grading path. manage.py
+    # instead drives everything through `docker compose run --rm tooling ...`,
+    # which reaches the target over the shared internal network by DNS name.
+    ports:
+      - "127.0.0.1:${TARGET_PORT:-8000}:8000"
+    environment:
+      EVIDENCE_MILL_DB: /data/evidence.db
+      EVIDENCE_MILL_ADMIN_TOKEN_FILE: /run/secrets/admin_token
+      EVIDENCE_MILL_FLAG_FILE: /run/secrets/flag
+    volumes:
+      - ./secrets/flag:/run/secrets/flag:ro
+      - ./secrets/admin_token:/run/secrets/admin_token:ro
+      - target-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+
+  tooling:
+    build:
+      context: .
+      target: tooling
+    networks:
+      - evidence-mill
+      - egress
+    depends_on:
+      target:
+        condition: service_healthy
+    environment:
+      EVIDENCE_MILL_ADMIN_TOKEN_FILE: /run/secrets/admin_token
+      TARGET_BASE_URL: http://target:8000
+      EVIDENCE_MILL_DB: /data/evidence.db
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT:-}
+      GOOGLE_CLOUD_LOCATION: ${GOOGLE_CLOUD_LOCATION:-us-central1}
+      # Same OAuth-via-ADC pattern as jobcrawler's providers.py VertexAIProvider
+      # (no static API key). manage.py's ensure_secrets() copies the host's
+      # `gcloud auth application-default login` credentials file here.
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/gcp_adc.json
+    volumes:
+      - ./secrets/admin_token:/run/secrets/admin_token:ro
+      - ./secrets/gcp_adc.json:/run/secrets/gcp_adc.json:ro
+      - ./reports:/app/reports
+      - ./agent.json:/app/agent.json:ro
+      - ./PLAYER.md:/app/PLAYER.md:ro
+      - target-data:/data:ro
+    profiles: ["tooling"]
+
+networks:
+  # Shared by target + tooling so tooling can reach target via Docker DNS
+  # ("http://target:8000") without any host port publish. internal: true means
+  # the target container itself has no route to the internet at all.
+  evidence-mill:
+    internal: true
+  # tooling-only: gives the trusted harness (grading, and later the LLM
+  # calibration cohort) its own internet access for model API calls, without
+  # granting the target container -- the one thing an evaluated agent talks
+  # to -- any egress whatsoever.
+  egress: {}
+
+volumes:
+  target-data:
