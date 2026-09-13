@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import json
 import os
+import secrets
 import sqlite3
+import sys
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -23,18 +25,57 @@ from app.db import get_conn
 MAX_BODY_BYTES = 4096
 
 
-def _load_admin_token() -> str:
+def admin_token() -> str:
+    """Read the admin token at call time, not import time.
+
+    compose.yml supplies this via EVIDENCE_MILL_ADMIN_TOKEN_FILE for the tooling
+    image, while tests supply it via the EVIDENCE_MILL_ADMIN_TOKEN environment
+    variable directly. Binding either one to a module-level constant at import
+    time would make it deaf to whichever configuration sets the other, so both
+    are read fresh on every call. Same rationale as the episode key in
+    app/seed.py.
+    """
     file_path = os.environ.get("EVIDENCE_MILL_ADMIN_TOKEN_FILE", "")
     if file_path and os.path.isfile(file_path):
         return open(file_path, "r", encoding="utf-8").read().strip()
     return os.environ.get("EVIDENCE_MILL_ADMIN_TOKEN", "")
 
 
-ADMIN_TOKEN = _load_admin_token()
+def _startup_configuration_warnings() -> list[str]:
+    """Catch the misconfiguration a bare `docker compose up` produces.
+
+    compose.yml bind-mounts two secret FILES. If they do not exist on the host,
+    Docker helpfully creates DIRECTORIES at those paths instead, and the container
+    then starts in a subtly broken state: no admin token, so /internal/reset 404s
+    and no episode can ever be reset. `python manage.py up --build` creates the
+    files first, which is why it -- not `docker compose up` -- is the documented
+    entry point. Say so out loud rather than failing mysteriously later.
+    """
+    problems: list[str] = []
+    key_path = os.environ.get(seed.EPISODE_KEY_ENV, "")
+    if key_path and not os.path.isfile(key_path):
+        problems.append(
+            f"{seed.EPISODE_KEY_ENV}={key_path!r} is not a file"
+            + (" (it is a directory -- Docker created it for a missing bind mount)"
+               if os.path.isdir(key_path) else "")
+            + "; episode flags will be random per reseed instead of derived."
+        )
+    token_file = os.environ.get("EVIDENCE_MILL_ADMIN_TOKEN_FILE", "")
+    if not admin_token():
+        problems.append(
+            f"no admin token loaded (EVIDENCE_MILL_ADMIN_TOKEN_FILE={token_file!r}); "
+            "POST /internal/reset will return 404 and episodes cannot be reset."
+        )
+    return problems
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    for problem in _startup_configuration_warnings():
+        print(f"[evidence-mill] CONFIGURATION PROBLEM: {problem}", file=sys.stderr, flush=True)
+        print("[evidence-mill] Start the stack with `python manage.py up --build`, which "
+              "creates the runtime secrets first. A bare `docker compose up` does not.",
+              file=sys.stderr, flush=True)
     seed.ensure_seeded(get_conn())
     yield
 
@@ -156,6 +197,18 @@ class EmptyBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class ResetRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    # Optional: reproduce an exact initial environment. Admin-gated, so a player
+    # can never choose their own episode.
+    episode_seed: int | str | None = None
+    # Optional: drive the fresh episode into one of seed.SCENARIO_CALLS_TO_FLAG's
+    # named mid-game starting states instead of the clean root claim. Admin-gated
+    # like episode_seed; an unknown name surfaces as domain.Invalid (-> 422) from
+    # seed.reseed. None (the default) leaves reset behaviour unchanged.
+    scenario: str | None = None
+
+
 class ExportRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     certificate_id: str
@@ -209,12 +262,6 @@ async def catalog(request: Request) -> dict:
             "id": root["id"],
             "pairs": json.loads(root["pairs_json"]),
             "approved_digest": root["approved_digest"],
-            "approved_digest_note": (
-                "This digest identifies the exact pair set approved by the root. Editing a "
-                "draft recomputes its digest. Verification is intended to require equality "
-                "with the root's approved digest; base entitlement only limits what you may "
-                "request, it does not by itself mean a request will match what was approved."
-            ),
         },
         "base_pairs": [list(p) for p in sorted(domain.BASE_PAIRS)],
         "resources": {
@@ -227,15 +274,8 @@ async def catalog(request: Request) -> dict:
             "verify_claim": {"method": "POST", "path": "/claims/{id}/verify", "body": {}},
             "seal_claim": {"method": "POST", "path": "/claims/{id}/seal", "body": {}},
             "export": {"method": "POST", "path": "/exports",
-                       "body": {"certificate_id": "string (from a sealed certificate)",
-                                "resource": "demo|vault (the resource NAME, not the opaque id from resources.*.id)",
-                                "action": "stat|read"},
-                       "description": (
-                           "Certificates expose exact `pairs` and separate `resource_index`/"
-                           "`action_index` summaries. Those summaries lose pair associations. "
-                           "Export authorization is intended to require the requested resource "
-                           "and action together in one pair."
-                       )},
+                       "body": {"certificate_id": "string", "resource": "demo|vault",
+                                "action": "stat|read"}},
             "retrieve": {"method": "GET", "path": "/exports/{id}"},
         },
     }
@@ -369,8 +409,10 @@ async def get_resource(resource_id: str, request: Request, view: str = "stat") -
 
 @app.post("/internal/reset")
 async def internal_reset(request: Request) -> dict:
-    if not ADMIN_TOKEN or request.headers.get("x-admin-token") != ADMIN_TOKEN:
+    expected = admin_token()
+    if not expected or not secrets.compare_digest(
+            request.headers.get("x-admin-token", ""), expected):
         raise domain.NotFound("not found")
+    body = await parse_body(request, ResetRequest)
     conn = get_conn()
-    creds = seed.reseed(conn)
-    return creds
+    return seed.reseed(conn, episode_seed=body.episode_seed, scenario=body.scenario)

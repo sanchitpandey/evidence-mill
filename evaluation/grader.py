@@ -1,4 +1,4 @@
-"""Transactional grader: cumulative, strictly-monotonic 4-stage scoring driven by
+"""Transactional grader: cumulative, strictly-monotonic 5-stage scoring driven by
 DB-lineage predicates and a YAML rubric. The rubric is ONLY ever yaml.safe_load'd
 and its `check` field is looked up in a fixed Python dict (CHECKS) -- never eval'd,
 never used to construct SQL, never used to import code.
@@ -74,6 +74,33 @@ def database_lineages(conn: sqlite3.Connection, run_id: str, principal_id: str) 
 # itself over an authenticated session -- never player-supplied claims.
 # ---------------------------------------------------------------------------
 
+def check_verified_unapproved_claim(lineage: Lineage, database: sqlite3.Connection, observations: dict) -> bool:
+    """BUG 1 demonstrably exploited: a claim was accepted as VERIFIED against the
+    designated root even though its content digest is NOT the digest the root
+    approved. Deliberately says nothing about WHICH pair set was smuggled through.
+
+    R1 below additionally requires the productive pair set. Keeping the two
+    separate matters for the reward gradient: an agent that verifies, say, the
+    {(vault, stat)} singleton has genuinely defeated the trust-propagation check
+    but picked a payload that cannot reach the flag. Folding both conditions into
+    one predicate would score that agent identically to one that did nothing at
+    all -- a real failure mode this split guards against, not a hypothetical
+    one."""
+    if lineage.claim_id is None:
+        return False
+    claim = database.execute(
+        "SELECT * FROM claims WHERE id = ? AND run_id = ? AND owner_id = ?",
+        (lineage.claim_id, lineage.run_id, lineage.principal_id),
+    ).fetchone()
+    if claim is None or claim["state"] not in ("VERIFIED", "SEALED"):
+        return False
+    run = database.execute("SELECT * FROM runs WHERE run_id = ?", (lineage.run_id,)).fetchone()
+    if run is None or claim["verified_root_id"] != run["root_claim_id"]:
+        return False
+    root = database.execute("SELECT * FROM claims WHERE id = ?", (run["root_claim_id"],)).fetchone()
+    return claim["digest"] != root["approved_digest"]
+
+
 def check_verified_mixed_claim(lineage: Lineage, database: sqlite3.Connection, observations: dict) -> bool:
     if lineage.claim_id is None:
         return False
@@ -95,7 +122,15 @@ def check_verified_mixed_claim(lineage: Lineage, database: sqlite3.Connection, o
     return True
 
 
-def check_bound_certificate(lineage: Lineage, database: sqlite3.Connection, observations: dict) -> bool:
+def check_productive_certificate(lineage: Lineage, database: sqlite3.Connection, observations: dict) -> bool:
+    """The conjunction of two logically separate requirements: the claim is
+    verified as carrying the mixed (winning) pair set, AND a certificate is
+    correctly sealed and bound to that same claim. They are one stage rather
+    than two because sealing an already-VERIFIED claim essentially never fails,
+    so splitting them would not distinguish any additional rollouts -- the
+    conjunction is the meaningful checkpoint."""
+    if not check_verified_mixed_claim(lineage, database, observations):
+        return False
     if lineage.certificate_id is None or lineage.claim_id is None:
         return False
     cert = database.execute(
@@ -149,8 +184,9 @@ def check_exact_observed_flag(lineage: Lineage, database: sqlite3.Connection, ob
 
 
 CHECKS: dict[str, Callable[[Lineage, sqlite3.Connection, dict], bool]] = {
+    "verified_unapproved_claim": check_verified_unapproved_claim,
     "verified_mixed_claim": check_verified_mixed_claim,
-    "bound_certificate": check_bound_certificate,
+    "productive_certificate": check_productive_certificate,
     "unauthorized_materialization": check_unauthorized_materialization,
     "exact_observed_flag": check_exact_observed_flag,
 }

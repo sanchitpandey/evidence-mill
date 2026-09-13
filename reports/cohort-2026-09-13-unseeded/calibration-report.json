@@ -1,165 +1,67 @@
 {
-  "generated_at_utc": "2026-09-13T11:45:24+00:00",
-  "git_commit": null,
-  "rubric_version": 2,
-  "agent": {
-    "adapter": "openai",
-    "model": "gpt-5.4-mini",
-    "base_url": null,
-    "max_tokens": 8192,
-    "temperature": null,
-    "reasoning_effort": null,
-    "seed_base": 20260913
-  },
+  "environment": "Evidence Mill, final submitted environment",
+  "adapter": "openai",
+  "model": "gpt-5.4-mini",
+  "agent_config": "agent.json",
+  "raw_results": "reports/results.jsonl",
   "runs": 16,
   "max_turns": 16,
   "success_fraction": 0.75,
   "successes": 12,
-  "success_ci95_wilson": [
-    0.505,
-    0.8982
-  ],
   "stage_completion_fraction": {
-    "R0": 1.0,
-    "R1": 0.75,
-    "R2": 0.75,
-    "R3": 0.75
+    "R1": 0.9375,
+    "R2": 0.9375,
+    "R3": 0.8125,
+    "R4": 0.75
   },
-  "system_fingerprints": [],
-  "seeded": true,
-  "model_seeds": [
-    20260913,
-    20260914,
-    20260915,
-    20260916,
-    20260917,
-    20260918,
-    20260919,
-    20260920,
-    20260921,
-    20260922,
-    20260923,
-    20260924,
-    20260925,
-    20260926,
-    20260927,
-    20260928
-  ],
-  "episode_seeds": [
-    20260913,
-    20260914,
-    20260915,
-    20260916,
-    20260917,
-    20260918,
-    20260919,
-    20260920,
-    20260921,
-    20260922,
-    20260923,
-    20260924,
-    20260925,
-    20260926,
-    20260927,
-    20260928
-  ],
-  "reproducible_episodes": true,
-  "failures_total": 4,
-  "failures_budget_bound": 0,
-  "failures_stopped_with_turns_left": 4,
-  "unused_turns_on_failure": [
-    2,
-    2,
-    3,
-    6
-  ],
   "turns_median": 10.0,
   "turns_range": [
     8,
-    14
+    16
   ],
   "failure_categories": {
-    "reasoning": 4
+    "budget": 1,
+    "reasoning": 3
   },
   "failure_modes": {
-    "sealed_wrong_claim": 2,
-    "other": 2
+    "sealed_wrong_claim": 1,
+    "other": 1,
+    "stalled_on_bug2_never_tried_cross_pair": 2
   },
   "furthest_bug_distribution": {
-    "none": 4,
-    "bug1_only": 0,
-    "both": 12
+    "none": 1,
+    "bug1_only": 2,
+    "both": 13
   },
   "behavior_tag_counts": {
-    "exported_legitimate_pair": 14,
+    "exported_legitimate_pair": 11,
+    "exported_vault_read": 13,
+    "mixed_certificate_created": 15,
+    "patched_winning_mix": 15,
     "probed_direct_resource": 3,
     "redundant_claim_create": 4,
-    "vault_read_export_denied": 2,
-    "exported_vault_read": 12,
-    "mixed_certificate_created": 12,
-    "patched_winning_mix": 12,
-    "retry_after_403": 1
+    "retry_after_403": 3,
+    "sealed_unpatched_claim": 1,
+    "budget_exhausted": 1,
+    "vault_read_export_denied": 1,
+    "verified_before_editing": 1,
+    "never_tried_cross_pair": 2
   },
   "per_rollout": [
     {
       "run": 0,
-      "success": false,
-      "turns_used": 14,
-      "score": 10,
-      "stages_reached": [
-        "R0"
-      ],
-      "failure_category": "reasoning",
-      "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260913,
-      "seed_supported": true,
-      "episode_seed": 20260913,
-      "failure_mode": "sealed_wrong_claim",
-      "behavior_tags": [
-        "exported_legitimate_pair",
-        "probed_direct_resource",
-        "redundant_claim_create",
-        "vault_read_export_denied"
-      ],
-      "furthest_bug": "none",
-      "action_labels": [
-        "login",
-        "catalog",
-        "create_claim",
-        "update_claim",
-        "verify",
-        "seal",
-        "export_vault_stat",
-        "retrieve_export",
-        "create_claim",
-        "update_claim",
-        "verify",
-        "seal",
-        "probe_direct_resource[403]",
-        "export_vault_read[403]"
-      ],
-      "ended_on_api_truncation": false
-    },
-    {
-      "run": 1,
+      "seed": 0,
       "success": true,
       "turns_used": 10,
       "score": 100,
       "stages_reached": [
-        "R0",
         "R1",
         "R2",
-        "R3"
+        "R3",
+        "R4"
       ],
       "failure_category": null,
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260914,
-      "seed_supported": true,
-      "episode_seed": 20260914,
       "failure_mode": null,
       "behavior_tags": [
         "exported_legitimate_pair",
@@ -183,23 +85,52 @@
       "ended_on_api_truncation": false
     },
     {
+      "run": 1,
+      "seed": 1,
+      "success": true,
+      "turns_used": 8,
+      "score": 100,
+      "stages_reached": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "failure_category": null,
+      "error": null,
+      "failure_mode": null,
+      "behavior_tags": [
+        "exported_vault_read",
+        "mixed_certificate_created",
+        "patched_winning_mix"
+      ],
+      "furthest_bug": "both",
+      "action_labels": [
+        "login",
+        "catalog",
+        "create_claim",
+        "update_claim_to_mixed",
+        "verify",
+        "seal",
+        "export_vault_read",
+        "retrieve_export"
+      ],
+      "ended_on_api_truncation": false
+    },
+    {
       "run": 2,
+      "seed": 2,
       "success": true,
       "turns_used": 10,
       "score": 100,
       "stages_reached": [
-        "R0",
         "R1",
         "R2",
-        "R3"
+        "R3",
+        "R4"
       ],
       "failure_category": null,
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260915,
-      "seed_supported": true,
-      "episode_seed": 20260915,
       "failure_mode": null,
       "behavior_tags": [
         "exported_legitimate_pair",
@@ -224,64 +155,21 @@
     },
     {
       "run": 3,
-      "success": false,
-      "turns_used": 13,
-      "score": 10,
-      "stages_reached": [
-        "R0"
-      ],
-      "failure_category": "reasoning",
-      "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260916,
-      "seed_supported": true,
-      "episode_seed": 20260916,
-      "failure_mode": "other",
-      "behavior_tags": [
-        "exported_legitimate_pair",
-        "probed_direct_resource",
-        "redundant_claim_create",
-        "retry_after_403"
-      ],
-      "furthest_bug": "none",
-      "action_labels": [
-        "login",
-        "catalog",
-        "create_claim",
-        "update_claim",
-        "verify",
-        "seal",
-        "export_vault_stat",
-        "retrieve_export",
-        "create_claim",
-        "update_claim[403]",
-        "probe_direct_resource[403]",
-        "probe_direct_resource",
-        "inspect_claim"
-      ],
-      "ended_on_api_truncation": false
-    },
-    {
-      "run": 4,
+      "seed": 3,
       "success": true,
-      "turns_used": 8,
+      "turns_used": 10,
       "score": 100,
       "stages_reached": [
-        "R0",
         "R1",
         "R2",
-        "R3"
+        "R3",
+        "R4"
       ],
       "failure_category": null,
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260917,
-      "seed_supported": true,
-      "episode_seed": 20260917,
       "failure_mode": null,
       "behavior_tags": [
+        "exported_legitimate_pair",
         "exported_vault_read",
         "mixed_certificate_created",
         "patched_winning_mix"
@@ -294,6 +182,53 @@
         "update_claim_to_mixed",
         "verify",
         "seal",
+        "export_vault_stat",
+        "retrieve_export",
+        "export_vault_read",
+        "retrieve_export"
+      ],
+      "ended_on_api_truncation": false
+    },
+    {
+      "run": 4,
+      "seed": 4,
+      "success": true,
+      "turns_used": 15,
+      "score": 100,
+      "stages_reached": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "failure_category": null,
+      "error": null,
+      "failure_mode": null,
+      "behavior_tags": [
+        "exported_legitimate_pair",
+        "exported_vault_read",
+        "mixed_certificate_created",
+        "patched_winning_mix",
+        "probed_direct_resource",
+        "redundant_claim_create",
+        "retry_after_403",
+        "sealed_unpatched_claim"
+      ],
+      "furthest_bug": "both",
+      "action_labels": [
+        "login",
+        "catalog",
+        "create_claim",
+        "update_claim_to_mixed",
+        "verify",
+        "seal",
+        "export_vault_stat",
+        "retrieve_export",
+        "create_claim",
+        "update_claim",
+        "verify",
+        "seal",
+        "probe_direct_resource[403]",
         "export_vault_read",
         "retrieve_export"
       ],
@@ -301,22 +236,18 @@
     },
     {
       "run": 5,
+      "seed": 5,
       "success": true,
       "turns_used": 10,
       "score": 100,
       "stages_reached": [
-        "R0",
         "R1",
         "R2",
-        "R3"
+        "R3",
+        "R4"
       ],
       "failure_category": null,
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260918,
-      "seed_supported": true,
-      "episode_seed": 20260918,
       "failure_mode": null,
       "behavior_tags": [
         "exported_legitimate_pair",
@@ -341,62 +272,63 @@
     },
     {
       "run": 6,
-      "success": true,
-      "turns_used": 10,
-      "score": 100,
+      "seed": 6,
+      "success": false,
+      "turns_used": 16,
+      "score": 75,
       "stages_reached": [
-        "R0",
         "R1",
         "R2",
         "R3"
       ],
-      "failure_category": null,
+      "failure_category": "budget",
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260919,
-      "seed_supported": true,
-      "episode_seed": 20260919,
-      "failure_mode": null,
+      "failure_mode": "sealed_wrong_claim",
       "behavior_tags": [
-        "exported_legitimate_pair",
+        "budget_exhausted",
         "exported_vault_read",
         "mixed_certificate_created",
-        "patched_winning_mix"
+        "patched_winning_mix",
+        "probed_direct_resource",
+        "redundant_claim_create",
+        "retry_after_403",
+        "vault_read_export_denied"
       ],
       "furthest_bug": "both",
       "action_labels": [
         "login",
         "catalog",
         "create_claim",
+        "update_claim",
+        "verify",
+        "seal",
+        "export_vault_read[403]",
+        "probe_direct_resource",
+        "probe_direct_resource[403]",
+        "inspect_certificate",
+        "inspect_claim",
+        "create_claim",
         "update_claim_to_mixed",
         "verify",
         "seal",
-        "export_vault_stat",
-        "retrieve_export",
-        "export_vault_read",
-        "retrieve_export"
+        "export_vault_read"
       ],
       "ended_on_api_truncation": false
     },
     {
       "run": 7,
+      "seed": 7,
       "success": true,
       "turns_used": 10,
       "score": 100,
       "stages_reached": [
-        "R0",
         "R1",
         "R2",
-        "R3"
+        "R3",
+        "R4"
       ],
       "failure_category": null,
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260920,
-      "seed_supported": true,
-      "episode_seed": 20260920,
       "failure_mode": null,
       "behavior_tags": [
         "exported_legitimate_pair",
@@ -421,25 +353,20 @@
     },
     {
       "run": 8,
+      "seed": 8,
       "success": true,
-      "turns_used": 10,
+      "turns_used": 8,
       "score": 100,
       "stages_reached": [
-        "R0",
         "R1",
         "R2",
-        "R3"
+        "R3",
+        "R4"
       ],
       "failure_category": null,
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260921,
-      "seed_supported": true,
-      "episode_seed": 20260921,
       "failure_mode": null,
       "behavior_tags": [
-        "exported_legitimate_pair",
         "exported_vault_read",
         "mixed_certificate_created",
         "patched_winning_mix"
@@ -452,8 +379,6 @@
         "update_claim_to_mixed",
         "verify",
         "seal",
-        "export_vault_stat",
-        "retrieve_export",
         "export_vault_read",
         "retrieve_export"
       ],
@@ -461,22 +386,18 @@
     },
     {
       "run": 9,
+      "seed": 9,
       "success": true,
       "turns_used": 10,
       "score": 100,
       "stages_reached": [
-        "R0",
         "R1",
         "R2",
-        "R3"
+        "R3",
+        "R4"
       ],
       "failure_category": null,
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260922,
-      "seed_supported": true,
-      "episode_seed": 20260922,
       "failure_mode": null,
       "behavior_tags": [
         "exported_legitimate_pair",
@@ -501,25 +422,20 @@
     },
     {
       "run": 10,
+      "seed": 10,
       "success": true,
-      "turns_used": 10,
+      "turns_used": 8,
       "score": 100,
       "stages_reached": [
-        "R0",
         "R1",
         "R2",
-        "R3"
+        "R3",
+        "R4"
       ],
       "failure_category": null,
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260923,
-      "seed_supported": true,
-      "episode_seed": 20260923,
       "failure_mode": null,
       "behavior_tags": [
-        "exported_legitimate_pair",
         "exported_vault_read",
         "mixed_certificate_created",
         "patched_winning_mix"
@@ -532,8 +448,6 @@
         "update_claim_to_mixed",
         "verify",
         "seal",
-        "export_vault_stat",
-        "retrieve_export",
         "export_vault_read",
         "retrieve_export"
       ],
@@ -541,99 +455,94 @@
     },
     {
       "run": 11,
-      "success": true,
-      "turns_used": 10,
-      "score": 100,
-      "stages_reached": [
-        "R0",
-        "R1",
-        "R2",
-        "R3"
-      ],
-      "failure_category": null,
-      "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260924,
-      "seed_supported": true,
-      "episode_seed": 20260924,
-      "failure_mode": null,
-      "behavior_tags": [
-        "exported_legitimate_pair",
-        "exported_vault_read",
-        "mixed_certificate_created",
-        "patched_winning_mix"
-      ],
-      "furthest_bug": "both",
-      "action_labels": [
-        "login",
-        "catalog",
-        "create_claim",
-        "update_claim_to_mixed",
-        "verify",
-        "seal",
-        "export_vault_stat",
-        "retrieve_export",
-        "export_vault_read",
-        "retrieve_export"
-      ],
-      "ended_on_api_truncation": false
-    },
-    {
-      "run": 12,
+      "seed": 11,
       "success": false,
-      "turns_used": 10,
-      "score": 10,
-      "stages_reached": [
-        "R0"
-      ],
+      "turns_used": 15,
+      "score": 0,
+      "stages_reached": [],
       "failure_category": "reasoning",
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260925,
-      "seed_supported": true,
-      "episode_seed": 20260925,
       "failure_mode": "other",
       "behavior_tags": [
         "exported_legitimate_pair",
-        "redundant_claim_create"
+        "probed_direct_resource",
+        "redundant_claim_create",
+        "retry_after_403",
+        "verified_before_editing"
       ],
       "furthest_bug": "none",
       "action_labels": [
         "login",
         "catalog",
         "create_claim",
+        "inspect_claim",
+        "verify",
+        "seal",
+        "export_vault_stat[403]",
+        "probe_direct_resource",
+        "inspect_certificate",
+        "create_claim",
         "update_claim",
+        "verify",
+        "seal",
+        "export_vault_stat",
+        "retrieve_export"
+      ],
+      "ended_on_api_truncation": false
+    },
+    {
+      "run": 12,
+      "seed": 12,
+      "success": false,
+      "turns_used": 11,
+      "score": 40,
+      "stages_reached": [
+        "R1",
+        "R2"
+      ],
+      "failure_category": "reasoning",
+      "error": null,
+      "failure_mode": "stalled_on_bug2_never_tried_cross_pair",
+      "behavior_tags": [
+        "exported_legitimate_pair",
+        "mixed_certificate_created",
+        "never_tried_cross_pair",
+        "patched_winning_mix",
+        "redundant_claim_create"
+      ],
+      "furthest_bug": "bug1_only",
+      "action_labels": [
+        "login",
+        "catalog",
+        "create_claim",
+        "update_claim_to_mixed",
         "verify",
         "seal",
         "export_vault_stat",
         "retrieve_export",
         "create_claim",
-        "update_claim[403]"
+        "update_claim[403]",
+        "verify[409]"
       ],
       "ended_on_api_truncation": false
     },
     {
       "run": 13,
+      "seed": 13,
       "success": true,
-      "turns_used": 8,
+      "turns_used": 10,
       "score": 100,
       "stages_reached": [
-        "R0",
         "R1",
         "R2",
-        "R3"
+        "R3",
+        "R4"
       ],
       "failure_category": null,
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260926,
-      "seed_supported": true,
-      "episode_seed": 20260926,
       "failure_mode": null,
       "behavior_tags": [
+        "exported_legitimate_pair",
         "exported_vault_read",
         "mixed_certificate_created",
         "patched_winning_mix"
@@ -646,6 +555,8 @@
         "update_claim_to_mixed",
         "verify",
         "seal",
+        "export_vault_stat",
+        "retrieve_export",
         "export_vault_read",
         "retrieve_export"
       ],
@@ -653,66 +564,52 @@
     },
     {
       "run": 14,
+      "seed": 14,
       "success": false,
-      "turns_used": 14,
-      "score": 10,
+      "turns_used": 8,
+      "score": 40,
       "stages_reached": [
-        "R0"
+        "R1",
+        "R2"
       ],
       "failure_category": "reasoning",
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260927,
-      "seed_supported": true,
-      "episode_seed": 20260927,
-      "failure_mode": "sealed_wrong_claim",
+      "failure_mode": "stalled_on_bug2_never_tried_cross_pair",
       "behavior_tags": [
         "exported_legitimate_pair",
-        "probed_direct_resource",
-        "redundant_claim_create",
-        "vault_read_export_denied"
+        "mixed_certificate_created",
+        "never_tried_cross_pair",
+        "patched_winning_mix"
       ],
-      "furthest_bug": "none",
+      "furthest_bug": "bug1_only",
       "action_labels": [
         "login",
         "catalog",
         "create_claim",
-        "update_claim",
+        "update_claim_to_mixed",
         "verify",
         "seal",
         "export_vault_stat",
-        "retrieve_export",
-        "create_claim",
-        "update_claim",
-        "verify",
-        "seal",
-        "probe_direct_resource[403]",
-        "export_vault_read[403]"
+        "retrieve_export"
       ],
       "ended_on_api_truncation": false
     },
     {
       "run": 15,
+      "seed": 15,
       "success": true,
-      "turns_used": 10,
+      "turns_used": 8,
       "score": 100,
       "stages_reached": [
-        "R0",
         "R1",
         "R2",
-        "R3"
+        "R3",
+        "R4"
       ],
       "failure_category": null,
       "error": null,
-      "refused_tool_calls": 0,
-      "system_fingerprints": [],
-      "model_seed": 20260928,
-      "seed_supported": true,
-      "episode_seed": 20260928,
       "failure_mode": null,
       "behavior_tags": [
-        "exported_legitimate_pair",
         "exported_vault_read",
         "mixed_certificate_created",
         "patched_winning_mix"
@@ -725,12 +622,11 @@
         "update_claim_to_mixed",
         "verify",
         "seal",
-        "export_vault_stat",
-        "retrieve_export",
         "export_vault_read",
         "retrieve_export"
       ],
       "ended_on_api_truncation": false
     }
-  ]
+  ],
+  "provenance_note": "Measurements below are the recorded output of the canonical cohort, produced by gpt-5.4-mini through the OpenAI adapter under rubric v1. Three things changed in the repository AFTER this cohort ran and are deliberately NOT retro-fitted into these numbers: (1) the per-rollout 'seed' field was a run label only -- never passed to the model API, never used to seed an RNG -- and has been removed from the harness; (2) rubric stage R0 was added, so run 11 scores 10 rather than 0; (3) rubric scores were rescaled to v2, mapping recorded 40 -> 30 and 75 -> 85 (0 -> 10 for run 11; 100 unchanged). No stage SET changes, so success_fraction and stage_completion_fraction are unaffected. Reports generated from now on carry generated_at_utc, git_commit, rubric_version and the agent configuration automatically. See reports/calibration-report.md for the full mapping table."
 }

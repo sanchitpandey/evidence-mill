@@ -1,12 +1,11 @@
 {
-  "adapter": "google",
-  "model": "google/gemini-2.5-pro",
-  "project_env": "GOOGLE_CLOUD_PROJECT",
-  "location": "us-central1",
-  "max_tokens": 4096,
-  "temperature": 0.1,
+  "adapter": "openai",
+  "model": "gpt-5.4-mini",
+  "api_key_env": "OPENAI_API_KEY",
+  "token_param": "max_completion_tokens",
+  "max_tokens": 8192,
   "max_turns": 16,
   "runs": 16,
-  "seed_list": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-  "note": "Third cohort attempt, on google/gemini-2.5-pro (Vertex AI, location=us-central1). The first two cohorts -- google/gemini-2.5-flash (25.0% success, 16/16 complete, see reports/results.gemini-2.5-flash.jsonl) and google/gemini-3.5-flash (2/9 success before the run was cut short for the same missed_clue pattern plus 2/9 rate-limited, see reports/results.gemini-3.5-flash-partial.jsonl) -- both converged on the same failure mode: most non-successful rollouts never composed the digest-mismatch exploit (bug 1) at all. This cohort exists to separate 'model too weak' from 'task under-signaled': gemini-2.5-pro is the strongest reasoning model available on this project (confirmed reachable, no rate-limit issues seen in smoke testing). max_tokens raised to 4096 for the same reasoning-token-overhead reason as the 3.5-flash cohort (measured up to 191 reasoning tokens for a single trivial call in isolated testing)."
+  "seed_base": 20260913,
+  "note": "Frozen configuration for the canonical 16-rollout calibration. seed_base pins BOTH halves of rollout i: the environment is reproduced from episode_seed = seed_base + i (run id, credentials, object ids and flag, derived through the secret runtime episode key), and the model samples at the same seed. Same seed therefore gives the same environment guaranteed, and the same trajectory only likely: OpenAI documents `seed` as Beta and best-effort, and temperature is fixed at 1.0 on GPT-5-series reasoning models. Check the report's `seeded`, `reproducible_episodes` and `system_fingerprints` fields. The RECORDED 12/16 cohort predates seeding and is not replayable; see reports/."
 }

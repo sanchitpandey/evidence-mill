@@ -1,4 +1,4 @@
-"""Regression coverage for the agent-facing HttpTool's target confinement.
+"""Coverage for the agent-facing HttpTool's target confinement.
 httpx treats an absolute URL passed to Client.request as an override of
 base_url rather than a path relative to it -- HttpTool must reject that
 itself, since the whole "target-only" safety claim for the agent interface

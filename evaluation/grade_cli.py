@@ -9,15 +9,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import sqlite3
 
 from evaluation.grader import grade
-
-
-def _connect_readonly(db_path: str) -> sqlite3.Connection:
-    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
-    conn.row_factory = sqlite3.Row
-    return conn
+from evaluation.readonly_db import open_readonly
 
 
 def main() -> int:
@@ -28,7 +22,7 @@ def main() -> int:
     parser.add_argument("--db", default=os.environ.get("EVIDENCE_MILL_DB", "/data/evidence.db"))
     args = parser.parse_args()
 
-    conn = _connect_readonly(args.db)
+    conn = open_readonly(args.db)
     run = conn.execute("SELECT * FROM runs LIMIT 1").fetchone()
     if run is None:
         print(json.dumps({"score": 0, "stages_reached": [], "error": "not seeded"}))

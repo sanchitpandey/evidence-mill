@@ -2,8 +2,8 @@
 call, no redirects, no batching, no automatic retries, target-only base_url.
 N calls to this tool == N turns for calibration purposes.
 
-The tool's own schema (see evaluation/anthropic_adapter.py TOOL_SCHEMA and the
-design doc's `http(method, path, json)` contract) has no `headers` parameter --
+The tool's own schema (see evaluation/openai_adapter.py and the documented
+`http(method, path, json)` contract) has no `headers` parameter --
 the agent is never asked to track or forward a bearer token itself. HttpTool
 therefore manages session continuity transparently: it watches every response
 body for a top-level "token" field (POST /session's shape) and auto-attaches

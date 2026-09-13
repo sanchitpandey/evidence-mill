@@ -25,7 +25,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.resolve()
 SECRETS_DIR = ROOT / "secrets"
-FLAG_FILE = SECRETS_DIR / "flag"
+EPISODE_KEY_FILE = SECRETS_DIR / "episode_key"
 ADMIN_TOKEN_FILE = SECRETS_DIR / "admin_token"
 DEFAULT_PORT = int(os.environ.get("TARGET_PORT", "8000"))
 BASE_URL = f"http://127.0.0.1:{DEFAULT_PORT}"
@@ -36,35 +36,36 @@ def sh(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, cwd=ROOT, check=True, **kwargs)
 
 
-def _new_flag() -> str:
-    return "flag{" + secrets.token_hex(16) + "}"
+def _utc_now() -> str:
+    import datetime
+    return datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat()
 
 
-def _default_gcloud_adc_path() -> Path | None:
-    if sys.platform == "win32":
-        candidate = Path(os.environ.get("APPDATA", "")) / "gcloud" / "application_default_credentials.json"
-    else:
-        candidate = Path.home() / ".config" / "gcloud" / "application_default_credentials.json"
-    return candidate if candidate.exists() else None
+def _git_commit() -> str | None:
+    """Best-effort commit id so a results file can be tied back to the tree that
+    produced it. Absent git is not an error -- the submission ships as a zip."""
+    try:
+        top = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=ROOT,
+                             capture_output=True, text=True, timeout=5).stdout.strip()
+        if not top or Path(top).resolve() != ROOT.resolve():
+            return None  # an unrelated parent repo's commit would be misleading
+        out = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
+                             capture_output=True, text=True, timeout=5)
+        return out.stdout.strip() or None
+    except Exception:  # noqa: BLE001
+        return None
 
 
-def ensure_secrets(rotate: bool = False) -> None:
+def ensure_secrets() -> None:
+    """Create the runtime secrets if absent. The episode key is a long-lived
+    secret, NOT the flag: app/seed.py derives a distinct flag per episode from
+    (key, run_id), so no caller has to remember to rotate anything and every
+    reset path -- host or harness -- rotates identically."""
     SECRETS_DIR.mkdir(exist_ok=True)
-    if rotate or not FLAG_FILE.exists():
-        FLAG_FILE.write_text(_new_flag(), encoding="utf-8")
+    if not EPISODE_KEY_FILE.exists():
+        EPISODE_KEY_FILE.write_text(secrets.token_hex(32), encoding="utf-8")
     if not ADMIN_TOKEN_FILE.exists():
         ADMIN_TOKEN_FILE.write_text(secrets.token_hex(32), encoding="utf-8")
-    gcp_adc_file = SECRETS_DIR / "gcp_adc.json"
-    if not gcp_adc_file.exists():
-        # Only needed for agent.json's "google" adapter (Vertex AI via OAuth,
-        # same pattern as jobcrawler's providers.py). Harmless placeholder
-        # otherwise -- compose.yml always mounts this path so the bind mount
-        # doesn't fail when the file is absent.
-        source = _default_gcloud_adc_path()
-        if source is not None:
-            gcp_adc_file.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
-        else:
-            gcp_adc_file.write_text("{}", encoding="utf-8")
 
 
 def compose(*args: str, **kwargs) -> subprocess.CompletedProcess:
@@ -135,10 +136,7 @@ def _last_json_line(text: str) -> dict:
 
 
 def _reset_episode() -> dict:
-    # The flag file is a runtime secret the HOST rotates -- reseed() just reads
-    # whatever is currently on disk. Without rewriting it here, every episode
-    # would read back the same flag the very first `ensure_secrets()` wrote.
-    ensure_secrets(rotate=True)
+    ensure_secrets()
     proc = _run_in_tooling("python", "-m", "evaluation.reset_cli")
     if proc.returncode != 0:
         raise SystemExit(f"reset failed: {proc.stdout}\n{proc.stderr}")
@@ -299,6 +297,8 @@ def cmd_reference(args: argparse.Namespace) -> int:
         print(f"failures: {failures}")
 
     report = {
+        "generated_at_utc": _utc_now(),
+        "git_commit": _git_commit(),
         "runs": args.runs, "successes": successes, "times_seconds": times, "failures": failures,
     }
     (ROOT / "reports").mkdir(exist_ok=True)
@@ -315,25 +315,23 @@ def cmd_calibrate(args: argparse.Namespace) -> int:
     it reaches target via Docker DNS (no host port dependency), grades every
     rollout by reading the target's SQLite volume directly (no exec/run
     round-trip per rollout), and has its own internet egress for the LLM call.
-    Requires ANTHROPIC_API_KEY in the host environment (forwarded via compose.yml)
-    unless agent.json configures a different adapter."""
+    Requires OPENAI_API_KEY in the host environment (forwarded via compose.yml)."""
     ensure_secrets()
     compose("up", "-d", "target")
     _wait_healthy()
     proc = subprocess.run(
         ["docker", "compose", "-f", "compose.yml", "run", "--rm", "-T", "tooling",
          "python", "-m", "evaluation.calibrate_cli",
-         "--runs", str(args.runs), "--turns", str(args.turns), "--config", "/app/agent.json"],
+         "--runs", str(args.runs), "--turns", str(args.turns),
+         "--config", f"/app/{os.path.basename(args.config)}"],
         cwd=ROOT,
     )
     return proc.returncode
 
 
 def cmd_test(_args: argparse.Namespace) -> int:
-    env = os.environ.copy()
-    env["EVIDENCE_MILL_DB"] = str(ROOT / "data_test" / "evidence.db")
-    env["EVIDENCE_MILL_ADMIN_TOKEN"] = "test-admin-token"
-    result = subprocess.run([sys.executable, "-m", "pytest", "tests/", "-v"], cwd=ROOT, env=env)
+    compose("build", "tooling")
+    result = compose("run", "--rm", "-T", "tooling", "python", "-m", "pytest", "tests/", "-q")
     return result.returncode
 
 
@@ -348,10 +346,13 @@ def cmd_acceptance_submission(_args: argparse.Namespace) -> int:
         "Dockerfile", "compose.yml", "requirements.lock", "requirements-tooling.lock",
         "manage.py", "app/main.py", "app/domain.py", "app/db.py", "app/seed.py",
         "evaluation/rubric.yaml", "evaluation/grader.py", "evaluation/reference.py",
-        "evaluation/calibrate.py", "evaluation/http_tool.py", "evaluation/acceptance.py",
+        "evaluation/calibrate.py", "evaluation/http_tool.py", "evaluation/openai_adapter.py",
+        "evaluation/acceptance.py", "agent.json", "package.py",
         "tests/test_flow.py", "tests/test_rewards.py", "tests/test_shortcuts.py",
         "tests/test_repairs.py", "tests/test_reset.py", "PLAYER.md", "README.md",
-        "reports/design-note.md",
+        "reports/design-note.md", "reports/calibration-report.md",
+        "reports/calibration-report.json", "reports/results.jsonl",
+        "reports/reference-run-report.json",
     ]
     missing = [f for f in required if not (ROOT / f).exists()]
     if missing:

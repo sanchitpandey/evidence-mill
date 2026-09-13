@@ -12,7 +12,7 @@ it, in the form `flag{32 lowercase hex characters}`.
    a bearer token. Send it as `Authorization: Bearer <token>` on every later call.
 2. `GET /catalog` to see the trusted root specimen, your base entitlement, and the
    two known resources (`demo`, `vault`) with their public metadata. Every ID and
-   link you need after this comes from responses -- nothing is guessed.
+   link you need after this comes from responses — nothing is guessed.
 
 ## The workflow
 
@@ -26,14 +26,8 @@ DRAFT --update--> DRAFT --verify--> VERIFIED --seal--> SEALED (-> certificate)
   trusted public specimen.
 - `PATCH /claims/{id} {"pairs": [[resource, action], ...]}` edits a draft's
   requested entitlement pairs. You may only ever request a subset of your own
-  base pairs (see `/catalog`). One draft may contain all of your base pairs
-  together in a single PATCH -- you don't need a separate claim per pair.
-  Complete all the edits you want before verifying: only a `DRAFT` claim is
-  editable, `PATCH` after `verify` is rejected. Seal that same claim and use
-  the certificate it returns for every export you attempt against it --
-  export authorization is checked per request, not baked into the
-  certificate at seal time, so one certificate can be tried against more
-  than one `(resource, action)` pair.
+  base pairs (see `/catalog`). Only a `DRAFT` claim is editable; `PATCH` after
+  `verify` is rejected.
 - `POST /claims/{id}/verify {}` submits the draft against its parent for
   approval.
 - `POST /claims/{id}/seal {}` freezes a verified claim into an immutable,

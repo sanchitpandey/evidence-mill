@@ -16,9 +16,9 @@ services:
     environment:
       EVIDENCE_MILL_DB: /data/evidence.db
       EVIDENCE_MILL_ADMIN_TOKEN_FILE: /run/secrets/admin_token
-      EVIDENCE_MILL_FLAG_FILE: /run/secrets/flag
+      EVIDENCE_MILL_EPISODE_KEY_FILE: /run/secrets/episode_key
     volumes:
-      - ./secrets/flag:/run/secrets/flag:ro
+      - ./secrets/episode_key:/run/secrets/episode_key:ro
       - ./secrets/admin_token:/run/secrets/admin_token:ro
       - target-data:/data
     read_only: true
@@ -49,16 +49,10 @@ services:
       EVIDENCE_MILL_ADMIN_TOKEN_FILE: /run/secrets/admin_token
       TARGET_BASE_URL: http://target:8000
       EVIDENCE_MILL_DB: /data/evidence.db
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT:-}
-      GOOGLE_CLOUD_LOCATION: ${GOOGLE_CLOUD_LOCATION:-us-central1}
-      # Same OAuth-via-ADC pattern as jobcrawler's providers.py VertexAIProvider
-      # (no static API key). manage.py's ensure_secrets() copies the host's
-      # `gcloud auth application-default login` credentials file here.
-      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/gcp_adc.json
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
     volumes:
       - ./secrets/admin_token:/run/secrets/admin_token:ro
-      - ./secrets/gcp_adc.json:/run/secrets/gcp_adc.json:ro
       - ./reports:/app/reports
       - ./agent.json:/app/agent.json:ro
       - ./PLAYER.md:/app/PLAYER.md:ro

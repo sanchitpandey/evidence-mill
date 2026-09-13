@@ -13,19 +13,28 @@ from __future__ import annotations
 
 import argparse
 import os
-import sqlite3
 from pathlib import Path
 
 import httpx
 
 from evaluation.calibrate import run_cohort
 from evaluation.grader import grade as grade_db
+from evaluation.readonly_db import open_readonly
 
 
-def _reset_fn(base_url: str, admin_token_file: str):
-    def reset() -> dict:
+def _reset_fn(base_url: str, admin_token_file: str, seed_base: int | None = None):
+    """Reset to rollout `run_idx`'s episode. When the agent config carries a
+    seed_base, the SAME base pins both halves of the rollout: the environment is
+    reproduced from seed_base + run_idx, and the model samples under that seed
+    too. Seeding only the sampler would leave the agent's observations (random
+    usernames and object ids) different on every run."""
+    def reset(run_idx: int = 0) -> dict:
         token = open(admin_token_file, "r", encoding="utf-8").read().strip()
-        r = httpx.post(f"{base_url}/internal/reset", headers={"x-admin-token": token}, timeout=5.0)
+        payload: dict = {}
+        if seed_base is not None:
+            payload["episode_seed"] = int(seed_base) + run_idx
+        r = httpx.post(f"{base_url}/internal/reset", headers={"x-admin-token": token},
+                        json=payload, timeout=5.0)
         r.raise_for_status()
         return r.json()
     return reset
@@ -33,8 +42,7 @@ def _reset_fn(base_url: str, admin_token_file: str):
 
 def _grade_fn(db_path: str):
     def grade_fn(username: str, observations: dict) -> dict:
-        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
-        conn.row_factory = sqlite3.Row
+        conn = open_readonly(db_path)
         try:
             run = conn.execute("SELECT * FROM runs LIMIT 1").fetchone()
             if run is None:
@@ -64,9 +72,14 @@ def main() -> int:
     admin_token_file = os.environ.get("EVIDENCE_MILL_ADMIN_TOKEN_FILE", "/run/secrets/admin_token")
     db_path = os.environ.get("EVIDENCE_MILL_DB", "/data/evidence.db")
 
+    seed_base = None
+    if Path(args.config).exists():
+        import json as _json
+        seed_base = _json.loads(Path(args.config).read_text(encoding="utf-8")).get("seed_base")
+
     run_cohort(
         base_url=base_url,
-        reset_fn=_reset_fn(base_url, admin_token_file),
+        reset_fn=_reset_fn(base_url, admin_token_file, seed_base),
         runs=args.runs,
         max_turns=args.turns,
         agent_config_path=args.config,

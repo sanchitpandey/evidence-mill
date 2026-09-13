@@ -5,7 +5,7 @@ __pycache__/
 data/
 data_test/
 secrets/
+.env
 *.db
 *.db-wal
 *.db-shm
-reports/results.jsonl
