@@ -13,10 +13,10 @@ cryptographic guessing, not infrastructure behaviour.
 **Difficulty:** intermediate. The reference solution is 8 HTTP calls. A solving
 agent is given 16.
 
-**AI assistance:** AI assistants were used throughout design, implementation,
-review, documentation and analysis. The author chose the design, ran every
-experiment reported here, read the trajectories, and is answerable for every
-component and every claim.
+**AI assistance:** AI assistants were used for implementation,
+review and documentation. The author chose the design, ran every
+experiment reported here, read the trajectories, and finalized every
+component and claim.
 
 ## The challenge
 
